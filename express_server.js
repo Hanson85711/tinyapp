@@ -25,9 +25,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  let id = generateRandomString();
-  urlDatabase[id] = req.body['longURL'];
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  let newid = generateRandomString();
+  urlDatabase[newid] = req.body['longURL'];
+  const templateVars = { id: newid, longURL: urlDatabase[newid] };
+  res.render("urls_show", templateVars);
 });
 
 app.get("/", (req, res) => {
@@ -59,5 +60,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
+
+
 
 
