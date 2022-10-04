@@ -10,7 +10,9 @@
     />
     <title>URL - TinyApp Example</title>
   </head>
-
+  <header>
+    <%- include('partials/_header') %>
+  </header>
   <body>
     <div class="card text-center">
       <div class="card-header"></div>
@@ -18,6 +20,7 @@
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
+          <a href="#"></a>
         </p>
       </div>
       <div class="card-footer text-muted"></div>
