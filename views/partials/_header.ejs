@@ -18,5 +18,13 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <h5 class="card-title">Username for: <%= username %></h5>
+    <form method = "POST" action="/login">
+      <input 
+          type="username" 
+          name="username"
+          placeholder="Username"
+          /> <button type="Login" class="btn btn-primary">Login</button>  
+    </form>
   </nav>
 </header>
