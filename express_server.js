@@ -29,14 +29,12 @@ app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   let newid = generateRandomString();
   urlDatabase[newid] = req.body['longURL'];
-  const templateVars = { username: req.cookies["username"], id: newid, longURL: urlDatabase[newid] };
-  res.render("urls_show", templateVars);
+  res.redirect("/urls/:id");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  res.redirect('urls');
 })
 
 app.post("/login", (req, res) => {
@@ -48,8 +46,7 @@ app.post("/login", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   urlDatabase[req.params.id] = req.body['longURL'];
-  const templateVars = { username: req.cookies["username"], id: req.params.id, longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
+  res.redirect("/urls/:id");
 });
 
 app.get("/", (req, res) => {
