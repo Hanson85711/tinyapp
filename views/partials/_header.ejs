@@ -18,7 +18,12 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <h5 class="card-title">Username for: <%= username %></h5>
+    <% if (username) { %>
+      <h5 class="card-title">Logged in as : <%= username %></h5>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <form method = "post" action = "/logout">
+        <button type="Logout" class="btn btn-danger">Logout</button> 
+      </form>
+    <% } else { %>
     <form method = "POST" action="/login">
       <input 
           type="username" 
@@ -26,5 +31,6 @@
           placeholder="Username"
           /> <button type="Login" class="btn btn-primary">Login</button>  
     </form>
+  <% } %>
   </nav>
 </header>

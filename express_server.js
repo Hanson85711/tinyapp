@@ -43,6 +43,12 @@ app.post("/login", (req, res) => {
   res.redirect('/urls');
 })
 
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  console.log(req.cookies);
+  res.redirect('/urls');
+})
+
 app.post("/urls/:id", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   urlDatabase[req.params.id] = req.body['longURL'];
