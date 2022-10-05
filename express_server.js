@@ -37,6 +37,13 @@ app.post("/urls/:id/delete", (req, res) => {
   res.render("urls_index", templateVars);
 })
 
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  urlDatabase[req.params.id] = req.body['longURL'];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  res.render("urls_show", templateVars);
+});
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -69,6 +76,9 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
+  if (!longURL.includes('http://')) {
+    res.redirect('http://' + longURL);
+  }
   res.redirect(longURL);
 });
 
