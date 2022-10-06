@@ -18,19 +18,14 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username) { %>
-      <h5 class="card-title">Logged in as : <%= username %></h5>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <% if (user_id) { %>
+      <h5 class="card-title">Logged in as : <%= user_id["email"] %></h5>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <form method = "post" action = "/logout">
         <button type="Logout" class="btn btn-danger">Logout</button> 
       </form>
     <% } else { %>
-    <form method = "POST" action="/login">
-      <input 
-          type="username" 
-          name="username"
-          placeholder="Username"
-          /> <button type="Login" class="btn btn-primary">Login</button>  
-    </form>
+      <label>Register <a href="/register">here</a></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <label>Login <a href="/login">here</a> </label> 
   <% } %>
   </nav>
 </header>

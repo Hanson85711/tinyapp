@@ -13,6 +13,25 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const exampleUser = {
+  id: "random",
+  email: "random@example.com",
+  password: "randompasswordexample",
+}
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 function generateRandomString() {
   let result = '';
   const length = 6;
@@ -27,9 +46,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  let newid = generateRandomString();
+  const newid = generateRandomString();
   urlDatabase[newid] = req.body['longURL'];
-  res.redirect("/urls/:id");
+  res.redirect(`/urls/${newid}`);
+});
+
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  urlDatabase[req.params.id] = req.body['longURL'];
+  res.redirect(`/urls`);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -38,14 +63,62 @@ app.post("/urls/:id/delete", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  console.log(req.cookies);
-  res.redirect('/urls');
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!findUser(email)) {
+    res.status(403).send('User cannot be found');
+  }
+  if (findUser(email)) {
+    const passwordCheck = users[findUser(email)].password;
+    console.log(findUser(email));
+    if (passwordCheck === password) {
+      res.cookie('user_id', findUser(email));
+      res.redirect('/urls');
+    } else {
+      res.status(403).send('Incorrect Password');
+    }
+  }
+})
+
+//Checks if user exists in database based on email input
+const findUser = function (email) {
+  let user = null; 
+  for (const userId in users) {
+    const userDbEmail = users[userId].email;
+    if (userDbEmail === email ) {
+      user = userId;
+    }
+  }
+
+  return user;
+}
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  //Checks if input fields are empty
+  if (!email || !password) {
+    res.status(400).send('Missing email or password');
+  }
+
+  //Checks if email exists in database already
+  if (findUser(email) !== null) {
+    console.log('reached');
+    res.status(400).send('Email is already in use');
+  }
+
+  
+
+  let newid = generateRandomString();
+  users[newid] = Object.create(exampleUser);
+  Object.assign(users[newid], {id: newid, email: email, password: password});
+  res.cookie("user_id", newid);
+  res.redirect('urls');
 })
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  console.log(req.cookies);
+  res.clearCookie("user_id");
   res.redirect('/urls');
 })
 
@@ -72,16 +145,27 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("urls_index", templateVars);
 })
 
+app.get("/register", (req, res) => {
+  const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
+  res.render("register", templateVars);
+})
+
+app.get("/login", (req, res) => {
+  const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
+  res.render("login", templateVars);
+})
+
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user_id: users[req.cookies["user_id"]] };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { username: req.cookies["username"], id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user_id: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
