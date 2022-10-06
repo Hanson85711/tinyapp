@@ -49,6 +49,30 @@ function generateRandomString() {
   return result;
 }
 
+//Checks if user exists in database based on email input
+function findUser(email) {
+  let user = null; 
+  for (const userId in users) {
+    const userDbEmail = users[userId].email;
+    if (userDbEmail === email ) {
+      user = userId;
+    }
+  }
+
+  return user;
+}
+
+function urlsForUser(id) {
+  let matchingUrls = {};
+  for (const userurl in urlDatabase) {
+    const userid = urlDatabase[userurl].userid;
+    if (userid === id) {
+      matchingUrls[userurl] = urlDatabase[userurl];
+    }
+  }
+
+  return matchingUrls;
+}
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/urls", (req, res) => {
@@ -90,19 +114,6 @@ app.post("/login", (req, res) => {
     }
   }
 })
-
-//Checks if user exists in database based on email input
-const findUser = function (email) {
-  let user = null; 
-  for (const userId in users) {
-    const userDbEmail = users[userId].email;
-    if (userDbEmail === email ) {
-      user = userId;
-    }
-  }
-
-  return user;
-}
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
@@ -156,6 +167,9 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    res.send('Please login first to see URLs');
+  }
   const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("urls_index", templateVars);
 })
@@ -186,6 +200,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    res.send('Please login first to see URLs');
+  }
+  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+    res.send('Cannot view edit url page because you do not own the url');
+  }
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user_id: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
