@@ -150,16 +150,26 @@ app.get("/urls", (req, res) => {
 })
 
 app.get("/register", (req, res) => {
+  if (users[req.cookies["user_id"]]) {
+    res.redirect("/urls");
+  }
   const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("register", templateVars);
 })
 
 app.get("/login", (req, res) => {
+  console.log(req.cookies);
+  if (users[req.cookies["user_id"]]) {
+    res.redirect("/urls");
+  }
   const templateVars = { user_id: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("login", templateVars);
 })
 
 app.get("/urls/new", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    res.redirect("/login");
+  }
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user_id: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
