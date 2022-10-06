@@ -8,6 +8,8 @@ app.use(cookieParser());
 
 const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+const bcrypt = require("bcryptjs");
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -128,7 +130,7 @@ app.post("/login", (req, res) => {
   if (findUser(email)) {
     const passwordCheck = users[findUser(email)].password;
     console.log(findUser(email));
-    if (passwordCheck === password) {
+    if (bcrypt.compareSync(password, passwordCheck)) {
       res.cookie('user_id', findUser(email));
       res.redirect('/urls');
     } else {
@@ -140,6 +142,7 @@ app.post("/login", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10)
 
   //Checks if input fields are empty
   if (!email || !password) {
@@ -156,8 +159,9 @@ app.post("/register", (req, res) => {
 
   let newid = generateRandomString();
   users[newid] = Object.create(exampleUser);
-  Object.assign(users[newid], {id: newid, email: email, password: password});
+  Object.assign(users[newid], {id: newid, email: email, password: hashedPassword});
   res.cookie("user_id", newid);
+  console.log(users);
   res.redirect('urls');
 })
 
