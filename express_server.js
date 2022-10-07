@@ -50,6 +50,7 @@ const users = {
 
 app.use(express.urlencoded({ extended: true }));
 
+//POST function for creating new URLs
 app.post("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
     res.send('Cannot create short URLs without logging in first');
@@ -61,6 +62,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newid}`);
 });
 
+//POST function for editing existing URL
 app.post("/urls/:id", (req, res) => {
   if (!users[req.session.user_id]) {
     res.send('Please login first to see URLs');
@@ -77,6 +79,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls`);
 });
 
+//POST function for deleting an url from the database
 app.post("/urls/:id/delete", (req, res) => {
   if (!users[req.session.user_id]) {
     res.send('Please login first to delete URLs');
@@ -91,15 +94,18 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+//POST function for logging in
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  //Checks if email exists in user database
   if (!findUser(email, users)) {
     res.status(403).send('User cannot be found');
   }
+
   if (findUser(email, users)) {
     const passwordCheck = users[findUser(email, users)].password;
-    if (bcrypt.compareSync(password, passwordCheck)) {
+    if (bcrypt.compareSync(password, passwordCheck)) { //Checks that the password given matches database
       req.session.user_id = findUser(email, users);
       res.redirect('/urls');
     } else {
@@ -108,6 +114,7 @@ app.post("/login", (req, res) => {
   }
 });
 
+//POST function for registering a new account
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -124,7 +131,7 @@ app.post("/register", (req, res) => {
   }
 
   
-
+  //Creates new account with inputted information and adds it to user database
   let newid = generateRandomString();
   users[newid] = Object.create(exampleUser);
   Object.assign(users[newid], {id: newid, email: email, password: hashedPassword});
@@ -132,16 +139,13 @@ app.post("/register", (req, res) => {
   res.redirect('urls');
 });
 
+//POST function for logging out by clearing cookies
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
 
-app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = { longURL: req.body['longURL'], userID: req.params.id};
-  res.redirect("/urls/:id");
-});
-
+//Redirects user to login page if not logged in, otherwise login page redirects back to /urls
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
@@ -158,49 +162,55 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//Main page for displaying URLs database that user has access to
 app.get("/urls", (req, res) => {
-  if (!users[req.session.user_id]) {
+  if (!users[req.session.user_id]) {  //Sends back HTML response if user is not logged in
     res.send('Please login first to see URLs');
   }
   const templateVars = { user_id: users[req.session.user_id], urls: urlsForUser(req.session.user_id, urlDatabase) };
   res.render("urls_index", templateVars);
 });
 
+//Account registration page 
 app.get("/register", (req, res) => {
-  if (users[req.session.user_id]) {
+  if (users[req.session.user_id]) { //If user is already logged in, automatically redirects to /urls
     res.redirect("/urls");
   }
   const templateVars = { user_id: users[req.session.user_id], urls: urlDatabase };
   res.render("register", templateVars);
 });
 
+//Login page
 app.get("/login", (req, res) => {
-  if (users[req.session.user_id]) {
+  if (users[req.session.user_id]) { //If user is logged in, automatically redirects to urls
     res.redirect("/urls");
   }
   const templateVars = { user_id: users[req.session.user_id], urls: urlDatabase };
   res.render("login", templateVars);
 });
 
+//Page for creating new URLs
 app.get("/urls/new", (req, res) => {
-  if (!users[req.session.user_id]) {
+  if (!users[req.session.user_id]) { //Users who are not logged in will instead be redirected to login
     res.redirect("/login");
   }
   const templateVars = { id: req.params.id, user_id: users[req.session.user_id] };
   res.render("urls_new", templateVars);
 });
 
+//Page for viewing the edit existing URL page
 app.get("/urls/:id", (req, res) => {
-  if (!users[req.session.user_id]) {
+  if (!users[req.session.user_id]) { //Users who are not logged in will receive HTML message
     res.send('Please login first to see URLs');
   }
-  if (req.session.user_id !== urlDatabase[req.params.id].userID) {
+  if (req.session.user_id !== urlDatabase[req.params.id].userID) { //Logged in users will not be able to view edit page for URLs that they do not own
     res.send('Cannot view edit url page because you do not own the url');
   }
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user_id: users[req.session.user_id] };
   res.render("urls_show", templateVars);
 });
 
+//Redirects the short URL to the long URL
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if (!urlDatabase[req.params.id]) {
