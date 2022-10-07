@@ -1,9 +1,11 @@
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
 //Checks if user exists in database based on email input
 function findUser(email, database) {
-  let user = null; 
+  let user;
   for (const userId in database) {
     const userDbEmail = database[userId].email;
-    if (userDbEmail === email ) {
+    if (userDbEmail === email) {
       user = userId;
     }
   }
@@ -14,19 +16,19 @@ function findUser(email, database) {
 function generateRandomString() {
   let result = '';
   const length = 6;
-  for ( let i = 0; i < length; i++ ) {
+  for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
 
   return result;
 }
 
-function urlsForUser(id) {
+function urlsForUser(id, database) {
   let matchingUrls = {};
-  for (const userurl in urlDatabase) {
-    const userid = urlDatabase[userurl].userID;
+  for (const userurl in database) {
+    const userid = database[userurl].userID;
     if (userid === id) {
-      matchingUrls[userurl] = urlDatabase[userurl];
+      matchingUrls[userurl] = database[userurl];
     }
   }
 

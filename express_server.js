@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
-const { findUser } = require ('./helpers');
-const { generateRandomString } = require ('./helpers');
-const { urlsForUser } = require ('./helpers');
-var cookieSession = require('cookie-session');
+const { findUser } = require('./helpers');
+const { generateRandomString } = require('./helpers');
+const { urlsForUser } = require('./helpers');
+let cookieSession = require('cookie-session');
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -13,9 +13,7 @@ app.use(cookieSession({
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
-
-const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+}));
 
 const bcrypt = require("bcryptjs");
 
@@ -35,7 +33,7 @@ const exampleUser = {
   id: "random",
   email: "random@example.com",
   password: "randompasswordexample",
-}
+};
 
 const users = {
   userRandomID: {
@@ -69,12 +67,12 @@ app.post("/urls/:id", (req, res) => {
   }
   if (!urlDatabase[req.params.id]) {
     res.send('This shortened url does not exist.');
-  };
+  }
   if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send('Cannot view edit url page because you do not own the url');
   }
   if (req.params.id)
-  console.log(req.body); // Log the POST request body to the console
+    console.log(req.body); // Log the POST request body to the console
   urlDatabase[req.params.id] = { longURL: req.body['longURL'], userID: req.session.user_id};
   res.redirect(`/urls`);
 });
@@ -85,13 +83,13 @@ app.post("/urls/:id/delete", (req, res) => {
   }
   if (!urlDatabase[req.params.id]) {
     res.send('This shortened url does not exist.');
-  };
+  }
   if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send('Cannot delete this url because you do not own the url');
   }
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
-})
+});
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -108,12 +106,12 @@ app.post("/login", (req, res) => {
       res.status(403).send('Incorrect Password');
     }
   }
-})
+});
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10)
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   //Checks if input fields are empty
   if (!email || !password) {
@@ -132,12 +130,12 @@ app.post("/register", (req, res) => {
   Object.assign(users[newid], {id: newid, email: email, password: hashedPassword});
   req.session.user_id = newid;
   res.redirect('urls');
-})
+});
 
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/urls');
-})
+});
 
 app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = { longURL: req.body['longURL'], userID: req.params.id};
@@ -164,9 +162,9 @@ app.get("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
     res.send('Please login first to see URLs');
   }
-  const templateVars = { user_id: users[req.session.user_id], urls: urlsForUser(req.session.user_id) };
+  const templateVars = { user_id: users[req.session.user_id], urls: urlsForUser(req.session.user_id, urlDatabase) };
   res.render("urls_index", templateVars);
-})
+});
 
 app.get("/register", (req, res) => {
   if (users[req.session.user_id]) {
@@ -174,7 +172,7 @@ app.get("/register", (req, res) => {
   }
   const templateVars = { user_id: users[req.session.user_id], urls: urlDatabase };
   res.render("register", templateVars);
-})
+});
 
 app.get("/login", (req, res) => {
   if (users[req.session.user_id]) {
@@ -182,7 +180,7 @@ app.get("/login", (req, res) => {
   }
   const templateVars = { user_id: users[req.session.user_id], urls: urlDatabase };
   res.render("login", templateVars);
-})
+});
 
 app.get("/urls/new", (req, res) => {
   if (!users[req.session.user_id]) {
@@ -207,10 +205,10 @@ app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if (!urlDatabase[req.params.id]) {
     res.send('This shortened url does not exist.');
-  };
+  }
   if (!longURL.includes('http://')) {
     res.redirect('http://' + longURL);
-  };
+  }
   res.redirect(longURL);
 });
 
