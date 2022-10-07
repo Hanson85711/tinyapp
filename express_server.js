@@ -126,7 +126,7 @@ app.post("/register", (req, res) => {
   }
 
   //Checks if email exists in database already
-  if (findUser(email, users) !== null) {
+  if (findUser(email, users) !== undefined) {
     res.status(400).send('Email is already in use');
   }
 
@@ -216,7 +216,7 @@ app.get("/u/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.send('This shortened url does not exist.');
   }
-  if (!longURL.includes('http://')) {
+  if (longURL.slice(0,7) !== 'http://') {
     res.redirect('http://' + longURL);
   }
   res.redirect(longURL);
